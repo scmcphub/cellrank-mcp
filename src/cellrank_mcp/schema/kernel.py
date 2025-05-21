@@ -4,12 +4,11 @@ from pydantic import (
     computed_field,
     field_validator,
     model_validator,
-    BaseModel
 )
 from typing import Optional, List, Dict, Union, Literal, Any, Tuple
+from scmcp_shared.schema import AdataModel
 
-
-class PseudotimeKernelModel(BaseModel):
+class PseudotimeKernelModel(AdataModel):
     """Input schema for CellRank's PseudotimeKernel which computes directed transition probabilities based on a k-NN graph and pseudotime."""
     
     time_key: str = Field(
@@ -21,7 +20,7 @@ class PseudotimeKernelModel(BaseModel):
     )
 
 
-class CytoTRACEKernelModel(BaseModel):
+class CytoTRACEKernelModel(AdataModel):
     """Input schema for CellRank's CytoTRACEKernel which computes directed transition probabilities using the CytoTRACE score."""
     
     backward: bool = Field(
@@ -30,7 +29,7 @@ class CytoTRACEKernelModel(BaseModel):
     )
 
 
-class VelocityKernelModel(BaseModel):
+class VelocityKernelModel(AdataModel):
     """Input schema for CellRank's VelocityKernel which computes a transition matrix based on RNA velocity."""
     
     backward: bool = Field(
@@ -59,7 +58,7 @@ class VelocityKernelModel(BaseModel):
     )
 
 
-class ConnectivityKernelModel(BaseModel):
+class ConnectivityKernelModel(AdataModel):
     """Input schema for CellRank's ConnectivityKernel which computes transition probabilities based on similarities among cells."""
     
     conn_key: str = Field(
@@ -73,7 +72,7 @@ class ConnectivityKernelModel(BaseModel):
     )
 
 
-class RealTimeKernelModel(BaseModel):
+class RealTimeKernelModel(AdataModel):
     """Input schema for creating a RealTimeKernel"""
     
     time_key: str = Field(
@@ -91,7 +90,7 @@ class RealTimeKernelModel(BaseModel):
     
 
 
-class KernelModel(BaseModel):
+class KernelModel(AdataModel):
     """Unified input schema for creating various CellRank Kernels."""
     
     kernel: Literal['pseudotime', 'cytotrace', 'velocity', 'connectivity', 'realtime'] = Field(
@@ -155,7 +154,7 @@ class KernelModel(BaseModel):
 
 
 
-class VelocityComputeTransitionMatrixModel(BaseModel):
+class VelocityComputeTransitionMatrixModel(AdataModel):
     """Input schema for computing transition matrix based on velocity directions on the local manifold in CellRank."""
     
     model: Literal['deterministic', 'stochastic', 'monte_carlo'] = Field(
@@ -199,7 +198,7 @@ class VelocityComputeTransitionMatrixModel(BaseModel):
     )
 
 
-class ConnectivityComputeTransitionMatrixModel(BaseModel):
+class ConnectivityComputeTransitionMatrixModel(AdataModel):
     """Input schema for computing transition matrix based on transcriptomic similarity in CellRank's ConnectivityKernel."""
     
     density_normalize: bool = Field(
@@ -208,7 +207,7 @@ class ConnectivityComputeTransitionMatrixModel(BaseModel):
     )
 
 
-class PseudotimeComputeTransitionMatrixModel(BaseModel):
+class PseudotimeComputeTransitionMatrixModel(AdataModel):
     """Input schema for computing transition matrix based on k-NN graph and pseudotemporal ordering in CellRank's PseudotimeKernel."""
     
     threshold_scheme: Literal['soft', 'hard'] = Field(
@@ -247,7 +246,7 @@ class PseudotimeComputeTransitionMatrixModel(BaseModel):
     )
     
 
-class CytoTRACEComputeTransitionMatrixModel(BaseModel):
+class CytoTRACEComputeTransitionMatrixModel(AdataModel):
     """Input schema for computing transition matrix based on k-NN graph and CytoTRACE scores in CellRank's CytoTRACEKernel."""
     
     threshold_scheme: Literal['soft', 'hard'] = Field(
@@ -286,7 +285,7 @@ class CytoTRACEComputeTransitionMatrixModel(BaseModel):
     )
     
 
-class RealTimeComputeTransitionMatrixModel(BaseModel):
+class RealTimeComputeTransitionMatrixModel(AdataModel):
     """Input schema for computing transition matrix from optimal transport couplings in CellRank's RealTimeKernel."""
     
     threshold: Union[int, float, Literal['auto', 'auto_local'], None] = Field(
@@ -310,7 +309,7 @@ class RealTimeComputeTransitionMatrixModel(BaseModel):
     )
     
 
-class ComputeTransitionMatrixModel(BaseModel):
+class ComputeTransitionMatrixModel(AdataModel):
     """Unified input schema for computing transition matrices across different CellRank kernel types."""
     kernel: Literal['pseudotime', 'cytotrace', 'velocity', 'connectivity', 'realtime'] = Field(
         description="Type of kernel to use."
