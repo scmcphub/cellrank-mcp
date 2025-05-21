@@ -1,4 +1,5 @@
 from fastmcp import FastMCP, Context
+from fastmcp.exceptions import ToolError
 import os
 import inspect
 from pathlib import Path
@@ -7,7 +8,7 @@ import cellrank as cr
 import scvelo as scv
 from pathlib import Path
 from ..schema.kernel import *
-from scmcp_shared.util import filter_args,forward_request
+from scmcp_shared.util import filter_args,forward_request, get_ads
 from scmcp_shared.logging_config import setup_logger
 
 
@@ -20,18 +21,15 @@ kernel_mcp = FastMCP("CellrankMCP-Kernel-Server")
 @kernel_mcp.tool()
 async def create_kernel(
     request: KernelModel, 
-    ctx: Context,
-    dtype: str = Field(default="exp", description="the datatype of anndata.X"),
-    sampleid: str = Field(default=None, description="adata sampleid for processing")
 ):
     """Create a CellRank kernel based on the specified type and parameters."""
     try:
         # Check if AnnData object exists in the session
-        result = await forward_request("kernel_create_kernel", request, sampleid=sampleid, dtype=dtype)
+        result = await forward_request("kernel_create_kernel", request)
         if result is not None:
             return result
-        ads = ctx.request_context.lifespan_context
-        adata = ads.get_adata(dtype=dtype, sampleid=sampleid).copy()
+        ads = get_ads()
+        adata = ads.get_adata(request=request).copy()
         kernel_type = request.kernel
         
         kernel_dic = {
@@ -44,7 +42,7 @@ async def create_kernel(
         if kernel_type not in kernel_dic:
             return {
                 "status": "error",
-                "message": f"不支持的kernel类型: {kernel_type}"
+                "message": f"Unsupported kernel type: {kernel_type}"
             }
         kernel_class = kernel_dic[kernel_type]
         kwargs = filter_args(request, kernel_class)
@@ -56,35 +54,32 @@ async def create_kernel(
             kernel = kernel_class(adata=adata, **kwargs)
         
         ads.cr_kernel[kernel_type] = kernel
-        ads.set_adata(adata, sampleid=sampleid, sdtype=dtype)
+        ads.set_adata(adata, request=request)
         return {
             "status": "success",
             "message": f"Successfully created {kernel_type} kernel",
             "kernel_type": kernel_type
         }
     
+    except ToolError as e:
+        raise ToolError(e)
     except Exception as e:
-        logger.error(f"Error creating kernel: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to create kernel: {str(e)}"
-        }
-
+        if hasattr(e, '__context__') and e.__context__:
+            raise ToolError(e.__context__)
+        else:
+            raise ToolError(e)
 
 @kernel_mcp.tool()
 async def compute_transition_matrix(
-    request: ComputeTransitionMatrixModel, 
-    ctx: Context,
-    dtype: str = Field(default="exp", description="the datatype of anndata.X"),
-    sampleid: str = Field(default=None, description="adata sampleid for processing")
+    request: ComputeTransitionMatrixModel
     ):
     """Compute transition matrix for a specified kernel using appropriate parameters."""
     try:
-        result = await forward_request("compute_transition_matrix", request, sampleid=sampleid, dtype=dtype)
+        result = await forward_request("compute_transition_matrix", request)
         if result is not None:
             return result
         kernel_type = request.kernel
-        ads = ctx.request_context.lifespan_context
+        ads = get_ads()
         kernel = ads.cr_kernel[kernel_type].copy()        
         kwargs = filter_args(request, kernel.compute_transition_matrix)
         kwargs["show_progress_bar"] = False
@@ -95,10 +90,10 @@ async def compute_transition_matrix(
             "message": f"Successfully computed transition matrix for {kernel_type} kernel"
         }
         
+    except ToolError as e:
+        raise ToolError(e)
     except Exception as e:
-        logger.error(f"Error computing transition matrix: {str(e)}")
-        return {
-            "status": "error",
-            "message": f"Failed to compute transition matrix: {str(e)}"
-        }
-
+        if hasattr(e, '__context__') and e.__context__:
+            raise ToolError(e.__context__)
+        else:
+            raise ToolError(e)

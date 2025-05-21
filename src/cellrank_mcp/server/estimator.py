@@ -1,10 +1,11 @@
 from fastmcp import FastMCP, Context
+from fastmcp.exceptions import ToolError
 import cellrank as cr
 import os
 from pathlib import Path
 import numpy as np
 from ..schema.estimator import *
-from scmcp_shared.util import filter_args, add_op_log, forward_request
+from scmcp_shared.util import filter_args, add_op_log, forward_request, get_ads
 from scmcp_shared.logging_config import setup_logger
 
 logger = setup_logger()
@@ -14,22 +15,19 @@ estimator_mcp = FastMCP("CellrankMCP-Estimator-Server")
 
 @estimator_mcp.tool()
 async def create_and_fit_gpcca(
-    ctx: Context,
     request: GPCCAFitModel,
-    dtype: str = Field(default="exp", description="the datatype of anndata.X"),
-    sampleid: str = Field(default=None, description="adata sampleid for processing")
 ):
     """Generalized Perron Cluster Cluster Analysis (GPCCA), Use it to compute macrostates.
     Need to compute transition matrix first as `.compute_transition_matrix()
     """
     try:
-        result = await forward_request("create_and_fit_gpcca", request, sampleid=sampleid, dtype=dtype)
+        result = await forward_request("create_and_fit_gpcca", request)
         if result is not None:
             return result    
         kernel_type = request.kernel
 
-        ads = ctx.request_context.lifespan_context
-        adata = ads.get_adata(dtype=dtype, sampleid=sampleid)
+        ads = get_ads()
+        adata = ads.get_adata(request=request)
 
         kernel = ads.cr_kernel[kernel_type]    
         estimator = cr.estimators.GPCCA(kernel)
@@ -40,22 +38,21 @@ async def create_and_fit_gpcca(
         ads.cr_estimator[kernel_type] = estimator
         return {
             "status": "success",
-            "message": f"成功创建并拟合了内核 '{kernel_type}' 的 GPCCA 估计器",
+            "message": f"Successfully created and fitted the GPCCA estimator for kernel '{kernel_type}'",
             "estimator": estimator
         }
+    except ToolError as e:
+        raise ToolError(e)
     except Exception as e:
         if hasattr(e, '__context__') and e.__context__:
-            raise Exception(f"{str(e.__context__)}")
+            raise ToolError(e.__context__)
         else:
-            raise e
+            raise ToolError(e)
 
 
 @estimator_mcp.tool()
 async def predict_terminal_states(
-    ctx: Context,
     request: GPCCAPredictTerminalStatesModel, 
-    dtype: str = None,
-    sampleid: str = None
 ):
     """
     Predict terminal states from macrostates. This automatically selects terminal states from the computed macrostates.
@@ -65,7 +62,7 @@ async def predict_terminal_states(
         if result is not None:
             return result  
         kernel_type = request.kernel
-        ads = ctx.request_context.lifespan_context
+        ads = get_ads()
         estimator = ads.cr_estimator[kernel_type].copy()
         
         # Filter arguments based on the predict_terminal_states method
@@ -83,19 +80,18 @@ async def predict_terminal_states(
             "kernel_type": kernel_type,
             "terminal_states": terminal_states
         }
+    except ToolError as e:
+        raise ToolError(e)
     except Exception as e:
         if hasattr(e, '__context__') and e.__context__:
-            raise Exception(f"{str(e.__context__)}")
+            raise ToolError(e.__context__)
         else:
-            raise e
+            raise ToolError(e)
 
 
 @estimator_mcp.tool()
 async def predict_initial_states(
-    ctx: Context,
     request: GPCCAPredictInitialStatesModel, 
-    dtype: str = None,
-    sampleid: str = None
 ):
     """
     Compute initial states from macrostates using coarse_stationary_distribution.
@@ -103,7 +99,8 @@ async def predict_initial_states(
     try:
         result = await forward_request("predict_initial_states", request)
         if result is not None:
-            return result    
+            return result
+        ads = get_ads()
         estimator = ads.cr_estimator[kernel_type].copy()
         # Filter arguments based on the predict_initial_states method
         kwargs = filter_args(request, estimator.predict_initial_states)
@@ -120,20 +117,18 @@ async def predict_initial_states(
             "kernel_type": kernel_type,
             "initial_states": initial_states
         }
-        
+    except ToolError as e:
+        raise ToolError(e)
     except Exception as e:
         if hasattr(e, '__context__') and e.__context__:
-            raise Exception(f"{str(e.__context__)}")
+            raise ToolError(e.__context__)
         else:
-            raise e
+            raise ToolError(e)
 
 
 @estimator_mcp.tool()
 async def compute_fate_probabilities(
     request: GPCCAComputeFateProbabilitiesModel, 
-    ctx: Context,
-    dtype: str = None,
-    sampleid: str = None
 ):
     """Compute fate probabilities for cells.
     """
@@ -142,7 +137,7 @@ async def compute_fate_probabilities(
         if result is not None:
             return result  
         kernel_type = request.kernel
-        ads = ctx.request_context.lifespan_context
+        ads = get_ads()
         estimator = ads.cr_estimator[kernel_type].copy()
         
         # Check if terminal states have been computed
@@ -167,8 +162,10 @@ async def compute_fate_probabilities(
             "fate_probabilities_computed": fate_probs_computed,
             "estimator": estimator,
         }
+    except ToolError as e:
+        raise ToolError(e)
     except Exception as e:
         if hasattr(e, '__context__') and e.__context__:
-            raise Exception(f"{str(e.__context__)}")
+            raise ToolError(e.__context__)
         else:
-            raise e
+            raise ToolError(e)
