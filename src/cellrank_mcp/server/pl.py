@@ -9,7 +9,7 @@ import cellrank as cr
 from scmcp_shared.util import add_op_log, filter_args,forward_request,get_ads
 from scmcp_shared.logging_config import setup_logger
 from ..util import set_fig_path
-
+from scmcp_shared.schema import AdataModel
 logger = setup_logger()
 
 
@@ -19,10 +19,11 @@ pl_mcp = FastMCP("CellrankMCP-Kernel-Server")
 @pl_mcp.tool()
 async def kernel_projection(
     request: KernelPlotProjectionModel, 
+    adinfo: AdataModel = AdataModel()
     ):
     """Plot transition matrix as a stream or grid plot for a specified kernel."""
     try:
-        result = await forward_request("kernel_projection", request)
+        result = await forward_request("kernel_projection", request, adinfo)
         if result is not None:
             return result 
         kernel_type = request.kernel
@@ -58,18 +59,19 @@ async def kernel_projection(
 
 @pl_mcp.tool()
 async def circular_projection(
-    request: CircularProjectionModel
+    request: CircularProjectionModel,
+    adinfo: AdataModel = AdataModel()
 ):
     """
     Visualize fate probabilities in a circular embedding. compute_fate_probabilities first.
     """
     try:
-        result = await forward_request("circular_projection", request)
+        result = await forward_request("circular_projection", request, adinfo)
         if result is not None:
             return result   
         # Check if AnnData object exists in the session
         ads = get_ads()
-        adata = ads.get_adata(request=request)
+        adata = ads.get_adata(adinfo=adinfo)
 
         if "lineages_fwd" not in adata.obsm:
             raise ValueError("No lineages_fwd found. Please call compute_fate_probabilities first.")

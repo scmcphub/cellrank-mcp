@@ -10,7 +10,7 @@ from pathlib import Path
 from ..schema.kernel import *
 from scmcp_shared.util import filter_args,forward_request, get_ads
 from scmcp_shared.logging_config import setup_logger
-
+from scmcp_shared.schema import AdataModel
 
 logger = setup_logger()
 
@@ -21,15 +21,16 @@ kernel_mcp = FastMCP("CellrankMCP-Kernel-Server")
 @kernel_mcp.tool()
 async def create_kernel(
     request: KernelModel, 
+    adinfo: AdataModel = AdataModel()
 ):
     """Create a CellRank kernel based on the specified type and parameters."""
     try:
         # Check if AnnData object exists in the session
-        result = await forward_request("kernel_create_kernel", request)
+        result = await forward_request("kernel_create_kernel", request, adinfo)
         if result is not None:
             return result
         ads = get_ads()
-        adata = ads.get_adata(request=request).copy()
+        adata = ads.get_adata(adinfo=adinfo).copy()
         kernel_type = request.kernel
         
         kernel_dic = {
@@ -54,7 +55,7 @@ async def create_kernel(
             kernel = kernel_class(adata=adata, **kwargs)
         
         ads.cr_kernel[kernel_type] = kernel
-        ads.set_adata(adata, request=request)
+        ads.set_adata(adata, adinfo=adinfo)
         return {
             "status": "success",
             "message": f"Successfully created {kernel_type} kernel",
@@ -71,11 +72,12 @@ async def create_kernel(
 
 @kernel_mcp.tool()
 async def compute_transition_matrix(
-    request: ComputeTransitionMatrixModel
+    request: ComputeTransitionMatrixModel,
+    adinfo: AdataModel = AdataModel()
     ):
     """Compute transition matrix for a specified kernel using appropriate parameters."""
     try:
-        result = await forward_request("compute_transition_matrix", request)
+        result = await forward_request("compute_transition_matrix", request, adinfo)
         if result is not None:
             return result
         kernel_type = request.kernel
