@@ -3,12 +3,12 @@ from pydantic import (
     ValidationInfo,
     computed_field,
     field_validator,
-    model_validator
+    model_validator, BaseModel
 )
 from typing import Optional, List, Dict, Union, Literal, Tuple, Any, Sequence
-from scmcp_shared.schema import AdataModel
 
-class GPCCAFitModel(AdataModel):
+
+class GPCCAFitModel(BaseModel):
     """
     Input schema for CellRank's GPCCA.fit method which prepares the estimator for terminal states prediction.
     """
@@ -58,7 +58,7 @@ class GPCCAFitModel(AdataModel):
     )
 
 
-class GPCCAPredictInitialStatesModel(AdataModel):
+class GPCCAPredictInitialStatesModel(BaseModel):
     """
     Input schema for CellRank's GPCCA.predict_initial_states method which computes initial states from macrostates.
     """
@@ -82,7 +82,7 @@ class GPCCAPredictInitialStatesModel(AdataModel):
     )
 
 
-class GPCCAPredictTerminalStatesModel(AdataModel):
+class GPCCAPredictTerminalStatesModel(BaseModel):
     """
     Input schema for CellRank's GPCCA.predict_terminal_states method which automatically selects terminal states from macrostates.
     """
@@ -123,7 +123,7 @@ class GPCCAPredictTerminalStatesModel(AdataModel):
     )
 
 
-class GPCCAComputeFateProbabilitiesModel(AdataModel):
+class GPCCAComputeFateProbabilitiesModel(BaseModel):
     """
     Input schema for CellRank's GPCCA.compute_fate_probabilities method which calculates the probability
     of each cell being absorbed in any of the terminal states.

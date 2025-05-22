@@ -7,10 +7,10 @@ from pydantic import (
     BaseModel
 )
 from typing import Optional, List, Dict, Union, Literal, Tuple, Any
-from scipy.sparse import spmatrix
-from scmcp_shared.schema import AdataModel
 
-class KernelPlotProjectionModel(AdataModel):
+
+
+class KernelPlotProjectionModel(BaseModel):
     """Input schema for plotting transition matrix as a stream or grid plot in CellRank kernels."""
     
     basis: str = Field(
@@ -53,7 +53,7 @@ class KernelPlotProjectionModel(AdataModel):
     )
 
 
-class CircularProjectionModel(AdataModel):
+class CircularProjectionModel(BaseModel):
     """
     Input schema for CellRank's circular_projection function which visualizes fate probabilities in a circular embedding.
     """

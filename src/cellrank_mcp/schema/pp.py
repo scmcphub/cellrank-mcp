@@ -4,11 +4,12 @@ from pydantic import (
     computed_field,
     field_validator,
     model_validator,
+    BaseModel
 )
 from typing import Optional, List, Dict, Union, Literal, Tuple, Any
-from scmcp_shared.schema import AdataModel
 
-class FilterAndNormalizeModel(AdataModel):
+
+class FilterAndNormalizeModel(BaseModel):
     """Input schema for filter_and_normalize preprocessing function."""
     
     min_counts: Optional[int] = Field(
