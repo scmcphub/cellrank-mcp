@@ -71,3 +71,8 @@ http://localhost:8000/mcp
 ## 🤝 Contributing
 
 If you have any questions, welcome to submit an issue, or contact me(hsh-me@outlook.com). Contributions to the code are also welcome!
+
+## Citing
+
+If you use cellRank-mcp in for your research, please consider citing  following work: 
+> Weiler, P., Lange, M., Klein, M. et al. CellRank 2: unified fate mapping in multiview single-cell data. Nat Methods 21, 1196–1205 (2024). https://doi.org/10.1038/s41592-024-02303-9
