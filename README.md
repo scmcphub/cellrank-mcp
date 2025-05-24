@@ -41,13 +41,21 @@ you can test it by running
 cellrank-mcp run
 ```
 
-#### run scnapy-server locally
+
+
+#### run cellrank-mcp locally
 Refer to the following configuration in your MCP client:
+
+check path
+```
+$ which cellrank 
+/home/test/bin/cellrank-mcp
+```
 
 ```
 "mcpServers": {
   "cellrank-mcp": {
-    "command": "cellrank-mcp",
+    "command": "/home/test/bin/cellrank-mcp",
     "args": [
       "run"
     ]
@@ -55,7 +63,7 @@ Refer to the following configuration in your MCP client:
 }
 ```
 
-#### run scnapy-server remotely
+#### run cellrank-server remotely
 Refer to the following configuration in your MCP client:
 
 run it in your server
@@ -63,11 +71,15 @@ run it in your server
 cellrank-mcp run --transport shttp --port 8000
 ```
 
-Then configure your MCP client, like this:
-```
-http://localhost:8000/mcp
+Then configure your MCP client in local AI client, like this:
 ```
 
+"mcpServers": {
+  "cellrank-mcp": {
+    "url": "http://localhost:8000/mcp"
+  }
+}
+```
 ## 🤝 Contributing
 
 If you have any questions, welcome to submit an issue, or contact me(hsh-me@outlook.com). Contributions to the code are also welcome!
