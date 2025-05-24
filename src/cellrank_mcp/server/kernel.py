@@ -83,8 +83,7 @@ async def compute_transition_matrix(
         kernel_type = request.kernel
         ads = get_ads()
         kernel = ads.cr_kernel[kernel_type].copy()        
-        kwargs = filter_args(request, kernel.compute_transition_matrix)
-        kwargs["show_progress_bar"] = False
+        kwargs = filter_args(request, kernel.compute_transition_matrix, show_progress_bar=False)
         kernel.compute_transition_matrix(**kwargs)
         ads.cr_kernel[kernel_type] = kernel
         return {
