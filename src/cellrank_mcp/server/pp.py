@@ -1,4 +1,3 @@
-from fastmcp import FastMCP, Context
 import scvelo as scv
 import scanpy as sc
 import inspect
@@ -8,23 +7,28 @@ from ..schema.pp import *
 from scmcp_shared.util import filter_args, add_op_log,forward_request,get_ads
 from scmcp_shared.logging_config import setup_logger
 from fastmcp.exceptions import ToolError
-from scmcp_shared.schema import AdataModel
+from scmcp_shared.schema import AdataInfo
+from scmcp_shared.server import ScanpyPreprocessingMCP
+
 
 logger = setup_logger()
 
-pp_mcp = FastMCP("CellrankMCP-Preprocessing-Server")
+
+pp_mcp = ScanpyPreprocessingMCP(
+    include_tools=["neighbors"]
+).mcp
 
 
 @pp_mcp.tool()
-async def filter_and_normalize(
+def filter_and_normalize(
     request: FilterAndNormalizeModel,
-    adinfo: AdataModel = AdataModel()
+    adinfo: AdataInfo = AdataInfo()
 ):
     """
     Preprocess data: filter and normalize AnnData object for velocity/pseudotime analysis.
     """
     try:
-        result = await forward_request("filter_and_normalize", request, adinfo)
+        result = forward_request("filter_and_normalize", request, adinfo)
         if result is not None:
             return result   
         ads = get_ads()
@@ -53,7 +57,7 @@ async def filter_and_normalize(
     except ToolError as e:
         raise ToolError(e)
     except Exception as e:
-        if hasattr(e, '__context__') and e.__context__:
+        if hasattr(e, '__') and e.__:
             raise ToolError(e.__context__)
         else:
             raise ToolError(e)

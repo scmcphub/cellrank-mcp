@@ -7,22 +7,22 @@ import numpy as np
 from ..schema.estimator import *
 from scmcp_shared.util import filter_args, add_op_log, forward_request, get_ads
 from scmcp_shared.logging_config import setup_logger
-from scmcp_shared.schema import AdataModel
+from scmcp_shared.schema import AdataInfo
 logger = setup_logger()
 
 estimator_mcp = FastMCP("CellrankMCP-Estimator-Server")
 
 
 @estimator_mcp.tool()
-async def create_and_fit_gpcca(
+def create_and_fit_gpcca(
     request: GPCCAFitModel,
-    adinfo: AdataModel = AdataModel()
+    adinfo: AdataInfo = AdataInfo()
 ):
     """Generalized Perron Cluster Cluster Analysis (GPCCA), Use it to compute macrostates.
     Need to compute transition matrix first as `.compute_transition_matrix()
     """
     try:
-        result = await forward_request("create_and_fit_gpcca", request, adinfo)
+        result = forward_request("create_and_fit_gpcca", request, adinfo)
         if result is not None:
             return result    
         kernel_type = request.kernel
@@ -52,15 +52,15 @@ async def create_and_fit_gpcca(
 
 
 @estimator_mcp.tool()
-async def predict_terminal_states(
+def predict_terminal_states(
     request: GPCCAPredictTerminalStatesModel, 
-    adinfo: AdataModel = AdataModel()
+    adinfo: AdataInfo = AdataInfo()
 ):
     """
     Predict terminal states from macrostates. This automatically selects terminal states from the computed macrostates.
     """  
     try:
-        result = await forward_request("predict_terminal_states", request, adinfo)
+        result = forward_request("predict_terminal_states", request, adinfo)
         if result is not None:
             return result  
         kernel_type = request.kernel
@@ -92,15 +92,15 @@ async def predict_terminal_states(
 
 
 @estimator_mcp.tool()
-async def predict_initial_states(
+def predict_initial_states(
     request: GPCCAPredictInitialStatesModel, 
-    adinfo: AdataModel = AdataModel()
+    adinfo: AdataInfo = AdataInfo()
 ):
     """
     Compute initial states from macrostates using coarse_stationary_distribution.
     """
     try:
-        result = await forward_request("predict_initial_states", request, adinfo)
+        result = forward_request("predict_initial_states", request, adinfo)
         if result is not None:
             return result
         ads = get_ads()
@@ -130,14 +130,14 @@ async def predict_initial_states(
 
 
 @estimator_mcp.tool()
-async def compute_fate_probabilities(
+def compute_fate_probabilities(
     request: GPCCAComputeFateProbabilitiesModel, 
-    adinfo: AdataModel = AdataModel()
+    adinfo: AdataInfo = AdataInfo()
 ):
     """Compute fate probabilities for cells.
     """
     try:
-        result = await forward_request("compute_fate_probabilities", request, adinfo)
+        result = forward_request("compute_fate_probabilities", request, adinfo)
         if result is not None:
             return result  
         kernel_type = request.kernel

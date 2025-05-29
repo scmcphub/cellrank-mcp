@@ -1,43 +1,34 @@
-import asyncio
-from fastmcp import FastMCP
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-from typing import Any
-
+from scmcp_shared.server import (
+    BaseMCPManager, io_mcp,
+    ScanpyPreprocessingMCP, 
+    ScanpyToolsMCP,
+    ScanpyPlottingMCP,
+    ScanpyUtilMCP
+)
 
 from .pl import pl_mcp
 from .kernel import kernel_mcp
 from .pp import pp_mcp
 from .estimator import estimator_mcp
 
-import scmcp_shared.server as shs
-from  scmcp_shared.util import filter_tools
 
-ads = shs.AdataState()
+tl_mcp = ScanpyToolsMCP().mcp
+ul_mcp = ScanpyUtilMCP(
+    include_tools=["query_op_log", "check_samples"],
+).mcp
 
-@asynccontextmanager
-async def adata_lifespan(server: FastMCP) -> AsyncIterator[Any]:
-    yield ads
 
-cellrank_mcp = FastMCP("Cellrank-MCP-Server", lifespan=adata_lifespan)
-
-async def setup(modules=None):
-
-    pp1_mcp = await filter_tools(
-        shs.pp_mcp,
-        include_tools=["neighbors"]
-    )
-    mcp_dic = {
-        "io": shs.io_mcp, 
-        "pp": pp1_mcp, 
-        "kernel": kernel_mcp, 
-        "estimator": estimator_mcp, 
-        "pl": shs.pl_mcp, "tl": shs.tl_mcp
-        }
-    if modules is None or modules == "all":
-        modules = mcp_dic.keys()
-    for module in modules:
-        await cellrank_mcp.import_server(module, mcp_dic[module])
-    await cellrank_mcp.import_server("pl", pl_mcp)
-    await cellrank_mcp.import_server("pp", pp_mcp)
-
+class CellrankMCPManager(BaseMCPManager):
+    """Manager class for Cellrank MCP modules."""
+    
+    def _init_modules(self):
+        """Initialize available Cellrank MCP modules."""
+        self.available_modules = {
+            "io": io_mcp, 
+            "pp": pp_mcp, 
+            "kernel": kernel_mcp, 
+            "estimator": estimator_mcp, 
+            "pl": pl_mcp, 
+            "tl": tl_mcp,
+            "ul": ul_mcp
+}

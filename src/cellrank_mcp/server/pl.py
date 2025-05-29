@@ -9,21 +9,24 @@ import cellrank as cr
 from scmcp_shared.util import add_op_log, filter_args,forward_request,get_ads
 from scmcp_shared.logging_config import setup_logger
 from ..util import set_fig_path
-from scmcp_shared.schema import AdataModel
+from scmcp_shared.schema import AdataInfo
+from scmcp_shared.server import ScanpyPlottingMCP
 logger = setup_logger()
 
 
-pl_mcp = FastMCP("CellrankMCP-Kernel-Server")
+pl_mcp = ScanpyPlottingMCP(
+    exclude_tools=["tracksplot", "rank_genes_groups", "rank_genes_groups_dotplot","violin","heatmap","dotplot","matrixplot","highly_variable_genes"],
+).mcp
 
 
 @pl_mcp.tool()
-async def kernel_projection(
+def kernel_projection(
     request: KernelPlotProjectionModel, 
-    adinfo: AdataModel = AdataModel()
+    adinfo: AdataInfo = AdataInfo()
     ):
     """Plot transition matrix as a stream or grid plot for a specified kernel."""
     try:
-        result = await forward_request("kernel_projection", request, adinfo)
+        result = forward_request("kernel_projection", request, adinfo)
         if result is not None:
             return result 
         kernel_type = request.kernel
@@ -58,15 +61,15 @@ async def kernel_projection(
 
 
 @pl_mcp.tool()
-async def circular_projection(
+def circular_projection(
     request: CircularProjectionModel,
-    adinfo: AdataModel = AdataModel()
+    adinfo: AdataInfo = AdataInfo()
 ):
     """
     Visualize fate probabilities in a circular embedding. compute_fate_probabilities first.
     """
     try:
-        result = await forward_request("circular_projection", request, adinfo)
+        result = forward_request("circular_projection", request, adinfo)
         if result is not None:
             return result   
         # Check if AnnData object exists in the session
