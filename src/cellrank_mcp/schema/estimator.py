@@ -31,11 +31,11 @@ class GPCCAFitModel(BaseModel):
         description="If a key to cluster labels is given, names and colors of the states will be associated with the clusters."
     )
     
-    # Parameters for compute_schur method
-    n_components: int = Field(
-        default=20,
-        description="Number of Schur vectors to compute."
-    )
+    # # Parameters for compute_schur method n_states is n_components in compute_schur
+    # n_components: int = Field(
+    #     default=20,
+    #     description="Number of Schur vectors to compute."
+    # )
     
     initial_distribution: Optional[Any] = Field(
         default=None,
