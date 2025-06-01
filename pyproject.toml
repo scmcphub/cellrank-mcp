@@ -22,7 +22,7 @@ dev = [
 ]
 
 [project.scripts]
-cellrank-mcp = "cellrank_mcp.cli:run_cli"
+cellrank-mcp = "cellrank_mcp.cli:cli.run"
 
 [build-system]
 requires = ["hatchling"]

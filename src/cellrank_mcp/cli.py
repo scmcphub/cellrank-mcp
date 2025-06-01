@@ -12,6 +12,3 @@ cli = MCPCLI(
     help_text="Cellrank MCP Server CLI",
     manager=CellrankMCPManager
 )
-
-def run_cli():
-    cli.app()
